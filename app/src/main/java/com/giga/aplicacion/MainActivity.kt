@@ -3,6 +3,7 @@ package com.giga.aplicacion
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -10,38 +11,37 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
 
     lateinit var apiWeb: ApiWeb
-    var listaComentario = ArrayList<Comentario>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         apiWeb = Configuration.obtenerConfiguracionRetrofit()
-     consumirServicioGet()
 
+         consumirServicioPost()
     }
-    fun consumirServicioGet(){
-        var callRespuesta = apiWeb.recuperaComentarios("comments")
-        callRespuesta.enqueue(object : Callback<ArrayList<Comentario>>{
-            override fun onResponse(
-                call: Call<ArrayList<Comentario>>,
-                response: Response<ArrayList<Comentario>>
-            ) {
-                if (response.isSuccessful){
-                    for (comentario in response.body()!!){
-                        Log.d("Mensaje", "${comentario.id}")
-                        Log.d("Mensaje", comentario.name)
-                        Log.d("Mensaje", comentario.body)
-                        Log.d("Mensaje", comentario.email)
 
-                    }
+    fun consumirServicioPost(){
+        var publicacion = Publicacion(0, "super post", 500, "cuerpo del super post")
+        var callRespuesta = apiWeb.insertarPublicacion(publicacion)
+
+        callRespuesta.enqueue(object : Callback<Publicacion>{
+            override fun onResponse(call: Call<Publicacion>, response: Response<Publicacion>) {
+                if (response.isSuccessful){
+                    var nuevoPost = response.body()
+                    var mensaje = "Post Creado: ${nuevoPost!!.id}. Titulo: ${nuevoPost.title}. Body: ${nuevoPost.body}"
+
+                    Toast.makeText(applicationContext, mensaje, Toast.LENGTH_SHORT).show()
                 }
             }
 
-            override fun onFailure(call: Call<ArrayList<Comentario>>, t: Throwable) {
-                TODO("Not yet implemented")
+            override fun onFailure(call: Call<Publicacion>, t: Throwable) {
+                Toast.makeText(applicationContext, "fallo", Toast.LENGTH_SHORT).show()
             }
+
 
         })
     }
+
 }
